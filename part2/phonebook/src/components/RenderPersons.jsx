@@ -1,12 +1,17 @@
-const RenderPersons = (props) => (
+const RenderPersons = ({persons, filter, deletePerson}) => (
     <div>
-        {props.persons.map( (person) => {
-            if (person.name.toLowerCase().includes(props.filter)) {
-                return <p key={person.id}>{person.name} {person.number}</p>
+        {persons.map( (person) => {
+            if (person.name.toLowerCase().includes(filter)) {
+                return (
+                    <div key={person.id}>
+                        <p>{person.name} {person.number} </p>
+                        <button onClick={() => deletePerson(person)}>delete</button>
+                    </div>   
+                )
             }
             return null
         })}
-    </div>
+    </div>    
 )
 
 export default RenderPersons

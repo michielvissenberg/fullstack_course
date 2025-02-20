@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import RenderPersons from './components/RenderPersons'
+import personService from './services/person'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,13 +10,11 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilterWoord] = useState('')
 
-  useEffect(() => {
-    console.log('start effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
+  useEffect(() => {    
+    personService
+      .getAll()
+      .then(allPersons => {
+        setPersons(allPersons)
       })
   }, [])
   
@@ -25,18 +23,35 @@ const App = () => {
     if (persons.some(person => person.name === newName && person.number === newNumber)) {
       window.alert(`${newName} is already in the phonebook`)
     }
+    else if (persons.some(person => person.name === newName)) {
+      const personToUpdate = persons.find(person => person.name === newName)
+      const changedPerson = {...personToUpdate, number: newNumber}
+      if(window.confirm(`${personToUpdate.name} is already in the phonebook, do you want to update the number?`)){
+        console.log(changedPerson)
+        personService
+          .update(personToUpdate.id, changedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(p => p.id === returnedPerson.id ? returnedPerson : p))
+            setNewName('')
+            setNewNumber('')
+          })
+      }
+    }
     else {
       const personObject = {
         name: newName,
         id: persons.length + 1,
         number: newNumber
       }
-  
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
+      
+      personService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
     }
-
   }
 
   const handleNameChange = (event) => {
@@ -49,6 +64,16 @@ const App = () => {
     setFilterWoord(event.target.value.toLowerCase())
   }
 
+  const deletePerson = person => {
+    if(window.confirm(`Delete ${person.name}`)) {
+      personService
+        .deletePerson(person.id)
+        .then( () => {
+          setPersons(persons.filter(p => p.id !== person.id));
+        }
+        )
+    }
+  }
 
   return (
     <div>
@@ -63,7 +88,11 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <RenderPersons persons={persons} filter={filter}/>
+      <RenderPersons 
+        persons={persons} 
+        filter={filter} 
+        deletePerson={deletePerson}
+      />
 
     </div>
   )
