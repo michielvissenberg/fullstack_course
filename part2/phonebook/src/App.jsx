@@ -3,18 +3,29 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import RenderPersons from './components/RenderPersons'
 import personService from './services/person'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilterWoord] = useState('')
+  const [confirmMessage, setConfirmMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {    
     personService
       .getAll()
       .then(allPersons => {
         setPersons(allPersons)
+      })
+      .catch(error => {
+        setErrorMessage(
+          `couldn't find the phonebook`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       })
   }, [])
   
@@ -34,6 +45,20 @@ const App = () => {
             setPersons(persons.map(p => p.id === returnedPerson.id ? returnedPerson : p))
             setNewName('')
             setNewNumber('')
+            setConfirmMessage(
+              `${returnedPerson.name}'s number was successfully changed`
+            )
+            setTimeout(() => {
+              setConfirmMessage(null)
+            }, 5000)
+          })
+          .catch(error => {
+            setErrorMessage(
+              `Information of ${personToUpdate.name} has already been removed from server`
+            )
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           })
       }
     }
@@ -50,6 +75,20 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNumber('')
+          setConfirmMessage(
+            `${returnedPerson.name} was successfully added`
+          )
+          setTimeout(() => {
+            setConfirmMessage(null)
+          }, 5000)
+        })
+        .catch(error => {
+          setErrorMessage(
+            `${personObject.name} couldn't be added to the phonebook`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
         })
     }
   }
@@ -70,14 +109,30 @@ const App = () => {
         .deletePerson(person.id)
         .then( () => {
           setPersons(persons.filter(p => p.id !== person.id));
+          setConfirmMessage(
+            `'${person.name}' was removed from server`
+          )
+          setTimeout(() => {
+            setConfirmMessage(null)
+          }, 5000)
         }
         )
+        .catch(error => {
+          setErrorMessage(
+            `${person.name} couldn't be removed from server`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)        
+        })
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={confirmMessage} status='confirm'/>
+      <Notification message={errorMessage} status='error'/>
       <Filter value={filter} onChange={handleFilter}/>
       <h2>Add a new person</h2>
       <PersonForm 

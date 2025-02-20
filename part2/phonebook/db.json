@@ -3,22 +3,12 @@
     {
       "id": "1",
       "name": "hallo",
-      "number": "1234"
+      "number": "123"
     },
     {
       "id": "2",
       "name": "hey",
       "number": "12345"
-    },
-    {
-      "id": "3",
-      "name": "michiel",
-      "number": "12322324234"
-    },
-    {
-      "id": 4,
-      "name": "goeie",
-      "number": "12322324234"
     }
   ]
 }
